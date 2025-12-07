@@ -1,0 +1,7 @@
+﻿variable,p_value,p_value_fdr,reject_null
+group_numeric,0.0,0.0,True
+time_pressure,0.0,0.0,True
+personality_numeric,0.0,0.0,True
+trial_index,0.0,0.0,True
+time_diff,0.0,0.0,True
+congestion_diff,0.0,0.0,True
