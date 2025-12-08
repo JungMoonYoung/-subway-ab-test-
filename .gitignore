@@ -50,3 +50,30 @@ Thumbs.db
 # Large files (CSV 파일 제외, Parquet 파일은 유지)
 data/*.csv
 # data/*.parquet - Parquet 파일은 포함됨 (용량이 작음)
+
+# 개발 과정 문서 (로컬만 유지)
+DAY*_REVIEW.md
+DAY*_CRITICAL_REVIEW.md
+DAY*_FIXES.md
+DAY*_DASHBOARD.md
+PROJECT_COMPLETE.md
+
+# 개인 학습 자료
+*이론.pdf
+면접_준비_완벽_가이드.md
+
+# 실행 화면 스크린샷
+실행화면/
+실행화면.zip
+
+# 다이어그램 소스 파일 및 중복 파일
+다이어그램/*.drawio
+다이어그램/구버전/
+다이어그램/white/
+다이어그램/datapipelineshite.drawio
+
+# 사용하지 않는 데이터 생성 스크립트
+data/add_choice_behavior.py
+data/add_choice_behavior_fixed.py
+data/simulate_trials.py
+data/visualize_distributions.py
