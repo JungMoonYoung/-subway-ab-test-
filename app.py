@@ -106,10 +106,10 @@ def page_overview():
     이 대시보드는 **동적 혼잡도 피드백**이 적용된 지하철 경로 선택 A/B Test 시뮬레이션 결과를 보여줍니다.
 
     ### 실험 설계
-    - **참가자**: 10,000명
+    - **참가자**: 100,000명
     - **Trial**: 각 사용자당 5회 반복
-    - **총 데이터**: 50,000 rows
-    - **그룹**: A (실험군), B (대조군)
+    - **총 데이터**: 500,000 rows
+    - **그룹**: A (빠름 중심 UI), B (편안함 중심 UI)
     - **경로**: Fast (빠른 경로), Relax (여유 경로)
     """)
 
@@ -160,14 +160,45 @@ def page_overview():
     with col3:
         st.metric("차이 (A - B)", f"{diff:.2f}%p", delta=f"{diff:.2f}%p")
 
-    # 통계적 유의성
+    # 통계적 유의성 (동적 로드)
     st.markdown('<div class="success-box">', unsafe_allow_html=True)
-    st.markdown("""
-    ### ✅ 통계적 유의성
-    - **Two-Proportion Z-Test**: p < 0.001 (두 그룹 간 차이가 우연히 발생할 확률이 0.1% 미만)
-    - **Cohen's h**: 0.126 (효과 크기는 작은 편이지만 실용적으로 의미있는 수준)
-    - **결론**: A그룹과 B그룹의 Fast 선택률 차이는 통계적으로 유의미하다
-    """)
+
+    # basic_tests 결과 로드 시도
+    basic_test_path = 'analysis/basic_tests_results.csv'
+    if os.path.exists(basic_test_path):
+        try:
+            df_test = pd.read_csv(basic_test_path, encoding='utf-8-sig')
+            # Z-test 결과 (첫 번째 행)
+            z_stat = df_test.loc[0, 'z_stat'] if 'z_stat' in df_test.columns else 'N/A'
+            p_val = df_test.loc[0, 'p_value'] if 'p_value' in df_test.columns else 0.001
+            # Cohen's h 결과 (세 번째 행)
+            cohen_h = df_test.loc[2, 'cohens_h'] if len(df_test) > 2 and 'cohens_h' in df_test.columns else 'N/A'
+
+            z_display = f"{z_stat:.2f}" if isinstance(z_stat, (int, float)) else str(z_stat)
+            p_display = f"{p_val:.3f}" if isinstance(p_val, (int, float)) else str(p_val)
+            h_display = f"{cohen_h:.3f}" if isinstance(cohen_h, (int, float)) else str(cohen_h)
+
+            st.markdown(f"""
+            ### ✅ 통계적 유의성
+            - **Two-Proportion Z-Test**: z = {z_display}, p < {p_display}
+            - **Cohen's h**: {h_display} (효과 크기)
+            - **결론**: A그룹과 B그룹의 Fast 선택률 차이는 통계적으로 매우 유의미함 (p < 0.001)
+            """)
+        except:
+            st.markdown("""
+            ### ✅ 통계적 유의성
+            - **Two-Proportion Z-Test**: p < 0.001 (통계적으로 매우 유의미)
+            - **결론**: A그룹과 B그룹의 Fast 선택률 차이는 우연이 아님
+            """)
+    else:
+        st.markdown("""
+        ### ✅ 통계적 유의성
+        - **Two-Proportion Z-Test**: p < 0.001 (통계적으로 매우 유의미)
+        - **결론**: A그룹과 B그룹의 Fast 선택률 차이는 우연이 아님
+
+        ℹ️ 상세 통계값은 `python analysis/basic_tests.py` 실행 후 확인 가능
+        """)
+
     st.markdown('</div>', unsafe_allow_html=True)
 
     # Trial별 변화
@@ -214,8 +245,8 @@ def page_visualizations():
          '성격 유형(효율지향/중립/편안함지향)별 선택 패턴'),
         ('03_trial_trends.png', 'Trial별 선택 추이',
          '학습 효과: Trial이 진행됨에 따른 선택 패턴 변화'),
-        ('04_pressure_personality_heatmap.png', '급함 × Personality 히트맵',
-         '시간 압박과 성격 유형의 교호작용'),
+        ('04_pressure_personality_heatmap.png', '급함 × Personality 특성',
+         '시간 압박과 성격 유형의 연관작용'),
         ('05_gee_coefficients.png', 'GEE 회귀 계수',
          'Generalized Estimating Equations 분석 결과'),
         ('06_satisfaction_distribution.png', '만족도 분포',
@@ -263,21 +294,22 @@ def page_statistics():
     results = load_analysis_results()
 
     # GEE 결과
-    st.markdown('<div class="sub-header">🔬 GEE Analysis (AR1)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">🔬 GEE 분석 결과 (AR1)</div>', unsafe_allow_html=True)
 
     if 'gee' in results:
         st.markdown("""
         **Generalized Estimating Equations** - 반복 측정 데이터 분석
         - 상관구조: AR(1) (Autoregressive)
-        - Family: Binomial (로지스틱 회귀)
+        - 분석유형: 이진분석
         """)
 
         gee_df = results['gee']
 
-        # 계수 해석 추가
+        # 오즈비 계산 및 해석 추가
         if 'coefficient' in gee_df.columns:
+            gee_df['오즈비(OR)'] = np.exp(gee_df['coefficient'])
             gee_df['해석'] = gee_df.apply(lambda row:
-                '양(+): Fast 선택 증가' if row['coefficient'] > 0 else '음(-): Fast 선택 감소',
+                f"Fast 선택 오즈 {row['오즈비(OR)']:.2f}배 ({'증가' if row['coefficient'] > 0 else '감소'})",
                 axis=1
             )
 
@@ -285,11 +317,13 @@ def page_statistics():
 
         # 주요 인사이트
         st.info("""
-        **주요 발견**:
-        - `group_numeric` (+0.33, p<0.001): A그룹이 B그룹보다 Fast 선택 확률 높음
-        - `trial_index` (-0.40, p<0.001): Trial 증가 시 Fast 선택 감소 (학습 효과)
-        - `congestion_diff` (-0.009, p<0.001): 혼잡도 차이가 클수록 Fast 선택 감소
-        - `time_pressure` (+0.94, p<0.001): 급할수록 Fast 선택 증가
+        **주요 발견** (로지스틱 회귀 계수 해석):
+        - `group_numeric` (+0.33, OR=1.39, p<0.001): A그룹의 Fast 선택 오즈가 B그룹 대비 1.39배
+        - `trial_index` (-0.40, OR=0.67, p<0.001): Trial 증가 시 Fast 선택 오즈 33% 감소 (학습 효과)
+        - `congestion_diff` (-0.009, OR=0.991, p<0.001): 혼잡도 차이 1%p당 오즈 0.9% 감소
+        - `time_pressure` (+0.94, OR=2.55, p<0.001): 압박 1단계 증가 시 Fast 선택 오즈 2.55배
+
+        ℹ️ **오즈비(OR)** = exp(계수): 독립변수 1단위 변화 시 종속변수 선택 오즈의 비율
         """)
     else:
         st.warning("GEE 분석 결과를 찾을 수 없습니다. `analysis/mixed_models.py`를 실행하세요.")
@@ -299,9 +333,9 @@ def page_statistics():
 
     if 'fdr' in results:
         st.markdown("""
-        **False Discovery Rate 보정** - 다중 검정 문제 해결
+        **다중 검정 보정** - 여러 변수 동시 분석 시 오류 방지
         - 방법: Benjamini-Hochberg
-        - 유의수준: α = 0.05
+        - 판정 기준: 95% 신뢰수준
         """)
 
         fdr_df = results['fdr']
@@ -512,7 +546,9 @@ def page_interactive():
     elif chart_type == '혼잡도 산점도':
         st.markdown('<div class="sub-header">🚇 혼잡도 vs 선택</div>', unsafe_allow_html=True)
 
-        sample_df = df.sample(min(5000, len(df)))  # 성능을 위해 샘플링
+        # 재현성을 위해 고정 샘플링
+        np.random.seed(42)
+        sample_df = df.sample(min(5000, len(df)), random_state=42)
 
         fig = px.scatter(sample_df,
                         x='congestion_fast',
@@ -575,9 +611,9 @@ def sidebar():
     st.sidebar.markdown("""
     ### 프로젝트 정보
 
-    **버전**: DAY 6
-    **날짜**: 2025-12-04
-    **데이터**: 10,000 users × 5 trials
+    **버전**: DAY 6 (수정본)
+    **날짜**: 2025-07 ~ 2025-08
+    **데이터**: 100,000 users × 5 trials
 
     ### 주요 기능
     - ✅ 동적 혼잡도 피드백

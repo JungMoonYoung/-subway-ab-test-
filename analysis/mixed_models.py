@@ -190,14 +190,15 @@ def gee_analysis(df, cov_struct='ar1'):
 
         print(result.summary())
 
-        # 계수 해석
-        print("\n계수 해석:")
+        # 계수 해석 (오즈비 추가)
+        print("\n계수 해석 (로지스틱 회귀):")
         params = result.params
         pvalues = result.pvalues
 
         for var, coef, pval in zip(exog_vars, params, pvalues):
+            odds_ratio = np.exp(coef)
             sig = "***" if pval < 0.001 else ("**" if pval < 0.01 else ("*" if pval < 0.05 else ""))
-            print(f"  {var:25s}: {coef:8.4f}  (p={pval:.6f}) {sig}")
+            print(f"  {var:25s}: β={coef:7.4f}, OR={odds_ratio:6.3f}  (p={pval:.6f}) {sig}")
 
         return result
 
@@ -377,6 +378,7 @@ def save_results(results_dict, output_dir='analysis'):
             if hasattr(result, 'params'):
                 df_params = pd.DataFrame({
                     'coefficient': result.params,
+                    'odds_ratio': np.exp(result.params),  # 오즈비 추가
                     'std_err': result.bse if hasattr(result, 'bse') else np.nan,
                     'z_value': result.tvalues if hasattr(result, 'tvalues') else np.nan,
                     'p_value': result.pvalues if hasattr(result, 'pvalues') else np.nan

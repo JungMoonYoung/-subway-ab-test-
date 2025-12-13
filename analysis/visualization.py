@@ -274,7 +274,9 @@ def plot_congestion_heatmap(df, output_dir):
                 linewidths=1, linecolor='white',
                 vmin=0, vmax=1, ax=ax)
 
-    ax.set_xlabel('Time Pressure (0=급함, 1=보통, 2=여유)', fontsize=13, fontweight='bold')
+    ax.set_xlabel('Time Pressure', fontsize=13, fontweight='bold')
+    # X축 레이블 명시화
+    ax.set_xticklabels(['급함(0)', '보통(1)', '여유(2)'])
     ax.set_ylabel('Personality Type', fontsize=13, fontweight='bold')
     ax.set_title('Time Pressure × Personality별 Fast Route 선택 비율',
                  fontsize=15, fontweight='bold', pad=20)
