@@ -16,16 +16,29 @@ import sys
 import os
 import matplotlib.font_manager as fm
 
-# 한글 폰트 설정 (Windows)
+# 한글 폰트 설정 (Windows/Linux/macOS 호환)
 # 사용 가능한 한글 폰트 찾기
 available_fonts = [f.name for f in fm.fontManager.ttflist]
-korean_fonts = ['Malgun Gothic', 'NanumGothic', 'AppleGothic', 'Noto Sans CJK KR']
+korean_fonts = ['NanumGothic', 'Nanum Gothic', 'NanumBarunGothic', 'Malgun Gothic', 'AppleGothic', 'Noto Sans CJK KR']
 
 font_name = None
 for font in korean_fonts:
     if font in available_fonts:
         font_name = font
         break
+
+# Linux 배포 환경에서 직접 폰트 파일 경로 시도
+if font_name is None:
+    linux_font_paths = [
+        '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
+        '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+    ]
+    for font_path in linux_font_paths:
+        if os.path.exists(font_path):
+            fm.fontManager.addfont(font_path)
+            prop = fm.FontProperties(fname=font_path)
+            font_name = prop.get_name()
+            break
 
 if font_name:
     plt.rcParams['font.family'] = font_name
