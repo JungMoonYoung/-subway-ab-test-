@@ -19,7 +19,7 @@ import matplotlib.font_manager as fm
 # 한글 폰트 설정 (Windows/Linux/macOS 호환)
 # 사용 가능한 한글 폰트 찾기
 available_fonts = [f.name for f in fm.fontManager.ttflist]
-korean_fonts = ['NanumGothic', 'Nanum Gothic', 'NanumBarunGothic', 'Malgun Gothic', 'AppleGothic', 'Noto Sans CJK KR']
+korean_fonts = ['Malgun Gothic', 'AppleGothic', 'NanumBarunGothic', 'Noto Sans CJK KR']
 
 font_name = None
 for font in korean_fonts:
@@ -59,6 +59,11 @@ print(f"[SEED] Random seed 설정: {config.RANDOM_SEED}")
 # 스타일 설정
 sns.set_style("whitegrid")
 sns.set_context("notebook", font_scale=1.2)
+
+# seaborn이 rcParams를 덮어쓰므로 폰트 재적용
+if font_name:
+    plt.rcParams['font.family'] = font_name
+plt.rcParams['axes.unicode_minus'] = False
 
 
 def load_data(file_path='data/synthetic_data_dynamic.parquet'):
