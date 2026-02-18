@@ -245,7 +245,7 @@ def page_visualizations():
          '성격 유형(효율지향/중립/편안함지향)별 선택 패턴'),
         ('03_trial_trends.png', '시행별 선택 추이',
          '학습 효과: Trial이 진행됨에 따른 선택 패턴 변화'),
-        ('04_pressure_personality_heatmap.png', '성격 유형 특성',
+        ('04_pressure_personality_heatmap.png', '급함 × 성격유형 특성',
          '시간 압박과 성격 유형의 연관작용'),
         ('05_gee_coefficients.png', 'GEE 회귀 계수',
          'Generalized Estimating Equations 분석 결과'),
