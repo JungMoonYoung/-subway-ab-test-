@@ -138,8 +138,8 @@ def plot_ab_comparison(df, output_dir):
                 ha='center', va='bottom', fontsize=14, fontweight='bold')
 
     ax.set_xlabel('그룹', fontsize=14, fontweight='bold')
-    ax.set_ylabel('Fast Route 선택 비율', fontsize=14, fontweight='bold')
-    ax.set_title('A/B 그룹별 Fast Route 선택 비율 비교',
+    ax.set_ylabel('빠른 경로 선택 비율', fontsize=14, fontweight='bold')
+    ax.set_title('A/B 그룹별 빠른 경로 선택 비율 비교',
                  fontsize=16, fontweight='bold', pad=20)
     ax.set_ylim(0, 1)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y*100:.0f}%'))
@@ -201,9 +201,9 @@ def plot_personality_breakdown(df, output_dir):
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y*100:.0f}%'))
 
         if i == 0:
-            ax.set_ylabel('Fast Route 선택 비율', fontsize=13, fontweight='bold')
+            ax.set_ylabel('빠른 경로 선택 비율', fontsize=13, fontweight='bold')
 
-    fig.suptitle('Personality Type별 Fast Route 선택 비율',
+    fig.suptitle('성격 유형별 빠른 경로 선택 비율',
                  fontsize=16, fontweight='bold', y=1.02)
     plt.tight_layout()
 
@@ -244,9 +244,9 @@ def plot_trial_trends(df, output_dir):
                 'o-', color=color, linewidth=3, markersize=10,
                 label=f'그룹 {group}', alpha=0.8)
 
-    ax.set_xlabel('Trial 번호', fontsize=14, fontweight='bold')
-    ax.set_ylabel('Fast Route 선택 비율', fontsize=14, fontweight='bold')
-    ax.set_title('Trial별 Fast Route 선택 비율 변화 (학습 효과)',
+    ax.set_xlabel('시행 번호', fontsize=14, fontweight='bold')
+    ax.set_ylabel('빠른 경로 선택 비율', fontsize=14, fontweight='bold')
+    ax.set_title('시행별 빠른 경로 선택 비율 변화 (학습 효과)',
                  fontsize=16, fontweight='bold', pad=20)
     ax.set_xticks(range(1, config.NUM_TRIALS + 1))
     ax.set_ylim(0, 1)
@@ -288,15 +288,15 @@ def plot_congestion_heatmap(df, output_dir):
     fig, ax = plt.subplots(figsize=(10, 6))
 
     sns.heatmap(heatmap_pivot, annot=True, fmt='.2%', cmap='RdYlGn',
-                cbar_kws={'label': 'Fast Route 선택 비율'},
+                cbar_kws={'label': '빠른 경로 선택 비율'},
                 linewidths=1, linecolor='white',
                 vmin=0, vmax=1, ax=ax)
 
-    ax.set_xlabel('Time Pressure', fontsize=13, fontweight='bold')
+    ax.set_xlabel('시간 압박 정도', fontsize=13, fontweight='bold')
     # X축 레이블 명시화
     ax.set_xticklabels(['급함(0)', '보통(1)', '여유(2)'])
-    ax.set_ylabel('Personality Type', fontsize=13, fontweight='bold')
-    ax.set_title('Time Pressure × Personality별 Fast Route 선택 비율',
+    ax.set_ylabel('성격 유형', fontsize=13, fontweight='bold')
+    ax.set_title('시간 압박 × 성격 유형별 빠른 경로 선택 비율',
                  fontsize=15, fontweight='bold', pad=20)
 
     # Y축 레이블 변경
@@ -391,7 +391,7 @@ def plot_satisfaction_distribution(df, output_dir):
         patch.set_alpha(0.7)
 
     axes[1].set_ylabel('만족도 점수', fontsize=13, fontweight='bold')
-    axes[1].set_title('만족도 점수 분포 (Boxplot)', fontsize=14, fontweight='bold')
+    axes[1].set_title('만족도 점수 분포 (박스플롯)', fontsize=14, fontweight='bold')
     axes[1].grid(axis='y', alpha=0.3, linestyle='--')
 
     plt.tight_layout()
@@ -418,14 +418,14 @@ def plot_congestion_dynamics(df, output_dir):
 
     ax.plot(trial_congestion['trial_number'], trial_congestion['congestion_fast'],
             'o-', color='#E63946', linewidth=3, markersize=10,
-            label='Fast Route 혼잡도', alpha=0.8)
+            label='빠른 경로 혼잡도', alpha=0.8)
     ax.plot(trial_congestion['trial_number'], trial_congestion['congestion_relax'],
             's-', color='#06A77D', linewidth=3, markersize=10,
-            label='Relax Route 혼잡도', alpha=0.8)
+            label='여유 경로 혼잡도', alpha=0.8)
 
-    ax.set_xlabel('Trial 번호', fontsize=14, fontweight='bold')
+    ax.set_xlabel('시행 번호', fontsize=14, fontweight='bold')
     ax.set_ylabel('평균 혼잡도 (%)', fontsize=14, fontweight='bold')
-    ax.set_title('Trial별 경로 혼잡도 변화 (동적 피드백)',
+    ax.set_title('시행별 경로 혼잡도 변화 (동적 피드백)',
                  fontsize=16, fontweight='bold', pad=20)
     ax.set_xticks(range(1, config.NUM_TRIALS + 1))
     ax.legend(fontsize=12, loc='upper right')
@@ -466,10 +466,11 @@ def plot_learning_effect(df, output_dir):
         ax.text(i, row['next_fast_rate'] + 0.03, f"{row['next_fast_rate']*100:.2f}%",
                 ha='center', va='bottom', fontsize=13, fontweight='bold')
 
+    choice_labels = {'Fast': '빠른 경로', 'Relax': '여유 경로'}
     ax.set_xticks(range(len(learning_stats)))
-    ax.set_xticklabels([f'이전: {choice}' for choice in learning_stats['previous_choice']],
+    ax.set_xticklabels([f'이전: {choice_labels.get(choice, choice)}' for choice in learning_stats['previous_choice']],
                        fontsize=12)
-    ax.set_ylabel('다음 Trial Fast 선택 비율', fontsize=13, fontweight='bold')
+    ax.set_ylabel('다음 시행 빠른 경로 선택 비율', fontsize=13, fontweight='bold')
     ax.set_title('학습 효과: 이전 선택에 따른 다음 선택 변화',
                  fontsize=15, fontweight='bold', pad=20)
     ax.set_ylim(0, 1)

@@ -210,7 +210,7 @@ def page_overview():
     trial_stats.columns = ['Trial', 'Fast 선택률 (%)']
 
     fig = px.line(trial_stats, x='Trial', y='Fast 선택률 (%)',
-                  title='Trial별 Fast 선택률 변화',
+                  title='시행별 빠른 경로 선택률 변화',
                   markers=True, line_shape='spline')
     fig.update_layout(height=400)
     fig.add_hline(y=70, line_dash="dash", line_color="red",
@@ -384,9 +384,9 @@ def page_statistics():
         ))
 
         fig.update_layout(
-            title='Trial별 Fast 선택률 변화',
-            xaxis_title='Trial',
-            yaxis_title='Fast 선택률 (%)',
+            title='시행별 빠른 경로 선택률 변화',
+            xaxis_title='시행',
+            yaxis_title='빠른 경로 선택률 (%)',
             height=500
         )
 
@@ -403,8 +403,8 @@ def page_statistics():
 
         # Personality별 차트
         fig = px.bar(pers_df, x='personality', y='fast_rate',
-                     title='Personality 유형별 Fast 선택률',
-                     labels={'personality': 'Personality 유형', 'fast_rate': 'Fast 선택률'},
+                     title='성격 유형별 빠른 경로 선택률',
+                     labels={'personality': '성격 유형', 'fast_rate': '빠른 경로 선택률'},
                      color='fast_rate',
                      color_continuous_scale='Blues')
 
@@ -525,6 +525,7 @@ def page_interactive():
                     labels={'assigned_group': '그룹', 'percentage': '선택률 (%)', 'selected_route': '경로'},
                     barmode='group',
                     color_discrete_map={'Fast': '#E63946', 'Relax': '#06A77D'})
+        fig.for_each_trace(lambda t: t.update(name='빠른 경로' if t.name == 'Fast' else '여유 경로'))
 
         fig.update_layout(height=500)
         st.plotly_chart(fig, use_container_width=True)
@@ -539,6 +540,7 @@ def page_interactive():
                               'selected_route': '경로'},
                        box=True,
                        color_discrete_map={'Fast': '#E63946', 'Relax': '#06A77D'})
+        fig.for_each_trace(lambda t: t.update(name='빠른 경로' if t.name == 'Fast' else '여유 경로'))
 
         fig.update_layout(height=500)
         st.plotly_chart(fig, use_container_width=True)
@@ -554,12 +556,13 @@ def page_interactive():
                         x='congestion_fast',
                         y='congestion_relax',
                         color='selected_route',
-                        title='Fast 혼잡도 vs Relax 혼잡도 (샘플 5000개)',
-                        labels={'congestion_fast': 'Fast 경로 혼잡도',
-                               'congestion_relax': 'Relax 경로 혼잡도',
+                        title='빠른 경로 혼잡도 vs 여유 경로 혼잡도 (샘플 5000개)',
+                        labels={'congestion_fast': '빠른 경로 혼잡도',
+                               'congestion_relax': '여유 경로 혼잡도',
                                'selected_route': '선택한 경로'},
                         opacity=0.5,
                         color_discrete_map={'Fast': '#E63946', 'Relax': '#06A77D'})
+        fig.for_each_trace(lambda t: t.update(name='빠른 경로' if t.name == 'Fast' else '여유 경로'))
 
         # 대각선 추가
         fig.add_shape(type='line',
@@ -585,8 +588,8 @@ def page_interactive():
 
         fig = px.line(fast_stats, x='trial_number', y='percentage',
                      color='assigned_group',
-                     title='Trial별 Fast 선택률 변화',
-                     labels={'trial_number': 'Trial', 'percentage': 'Fast 선택률 (%)',
+                     title='시행별 빠른 경로 선택률 변화',
+                     labels={'trial_number': '시행', 'percentage': '빠른 경로 선택률 (%)',
                             'assigned_group': '그룹'},
                      markers=True,
                      color_discrete_map={'A': '#2E86AB', 'B': '#A23B72'})
@@ -611,8 +614,10 @@ def sidebar():
     st.sidebar.markdown("""
     ### 프로젝트 정보
 
-    **버전**: DAY 6 (수정본)
-    **날짜**: 2025-07 ~ 2025-08
+    **버전**: DAY 6 (최종)
+    **전체 기간**: 2025-09 ~ 2025-11 (2.5개월)
+    **작업 기간**: 약 5주 (순수 개발)
+    **중단 기간**: 3주 (대학 일정)
     **데이터**: 100,000 users × 5 trials
 
     ### 주요 기능
