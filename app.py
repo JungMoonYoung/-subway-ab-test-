@@ -621,7 +621,6 @@ def sidebar():
     """)
 
     st.sidebar.markdown("---")
-    st.sidebar.info("💡 좌측 메뉴에서 페이지를 선택하세요")
 
     return page
 
