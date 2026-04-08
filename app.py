@@ -96,6 +96,275 @@ def load_analysis_results():
     return results
 
 
+def page_insight():
+    """📌 SUMMARY 브리핑 (대시보드 진입 첫 화면)
+
+    채용담당자/현업 사용자에게 '왜 이 실험을 했고, 어떻게 풀었으며,
+    무엇을 발견했고, 어떻게 활용할 수 있는지'를 한 페이지에 정리한다.
+    """
+
+    # ---------- 컴팩트 히어로 ----------
+    st.markdown("""
+    <div style="padding:20px 26px;border-radius:14px;
+                background:linear-gradient(135deg,#1a2a4a 0%,#3a1b4e 100%);
+                border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <div style="font-size:24px;font-weight:800;color:#fff;">
+                🚇 지하철 이용행동 A/B Test
+            </div>
+            <div style="font-size:14px;color:#9ec5ff;letter-spacing:0.5px;">
+                통제 불가능한 변수 속에서 실험을 설계하고, 통계적으로 검증할 수 있습니다
+            </div>
+        </div>
+        <div style="font-size:14px;color:#c9d1e8;margin-top:8px;line-height:1.6;">
+            <b style="color:#fff;">100,000명 × 5 Trial = 500,000 rows</b> 시뮬레이션 +
+            <b style="color:#9ec5ff;">GEE(AR1) 반복측정 분석</b>으로
+            UI가 행동에 미치는 진짜 영향을 분리합니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ---------- 4×4 매트릭스 ----------
+    C_DESIGN = "#2E86AB"   # Navy
+    C_METHOD = "#A23B72"   # Magenta
+    C_FIND   = "#F18F01"   # Orange
+
+    td_base = (
+        "padding:18px 20px;vertical-align:top;"
+        "border:1px solid rgba(255,255,255,0.08);"
+        "background:rgba(255,255,255,0.03);"
+    )
+    td_label = (
+        "padding:18px 20px;vertical-align:top;"
+        "border:1px solid rgba(255,255,255,0.08);"
+        "background:rgba(158,197,255,0.08);"
+        "width:14%;"
+    )
+
+    def _header_cell(icon, title, color, question):
+        return (
+            f'<td style="{td_base}border-top:3px solid {color};width:28.6%;">'
+            f'<div style="font-size:32px;line-height:1;">{icon}</div>'
+            f'<div style="font-size:22px;font-weight:800;color:{color};margin:10px 0 6px 0;letter-spacing:-0.5px;">{title}</div>'
+            f'<div style="color:#c9d1e8;font-size:13.5px;font-style:italic;line-height:1.5;">{question}</div>'
+            f'</td>'
+        )
+
+    def _label_cell(icon, text):
+        return (
+            f'<td style="{td_label}">'
+            f'<div style="font-size:22px;">{icon}</div>'
+            f'<div style="color:#fff;font-size:16px;font-weight:800;margin-top:6px;line-height:1.3;">{text}</div>'
+            f'</td>'
+        )
+
+    def _content_cell(html_content, color=None, bold=False):
+        weight = "600" if bold else "400"
+        col = color if color else "#c9d1e8"
+        return (
+            f'<td style="{td_base}">'
+            f'<div style="color:{col};font-size:14px;line-height:1.8;font-weight:{weight};">{html_content}</div>'
+            f'</td>'
+        )
+
+    table_html = (
+        '<table style="width:100%;border-collapse:separate;border-spacing:0;border-radius:14px;overflow:hidden;">'
+        # 헤더 행
+        '<tr>'
+        f'{_label_cell("🗂️", "구분")}'
+        f'{_header_cell("🧪", "실험 설계", C_DESIGN, "100만 명 현장 실험은 불가능하다. 그렇다면 어떻게 검증할까?")}'
+        f'{_header_cell("📊", "분석 방법론", C_METHOD, "같은 사람이 5번 선택한 데이터, 독립성 가정이 무너진다")}'
+        f'{_header_cell("💡", "핵심 발견", C_FIND, "UI · 상황 · 성향 중 무엇이 선택을 가장 좌우하는가?")}'
+        '</tr>'
+        # 행 1: 문제 정의
+        '<tr>'
+        f'{_label_cell("🎯", "문제 정의")}'
+        f'{_content_cell("현실의 불확실성을 어떻게<br>시뮬레이션에 반영할 것인가")}'
+        f'{_content_cell("반복측정 데이터에서<br>진짜 인과 효과를 분리하기")}'
+        f'{_content_cell("수치 나열이 아닌<br>의미 있는 패턴 도출")}'
+        '</tr>'
+        # 행 2: 접근 방법
+        '<tr>'
+        f'{_label_cell("🔬", "접근 방법")}'
+        f'{_content_cell("• 성격 3유형 분포 생성<br>• <b>동적 혼잡도 피드백 루프</b><br>• Bernoulli 확률적 선택")}'
+        f'{_content_cell("• Two-Proportion Z-Test<br>• <b>GEE (AR1) 반복측정</b><br>• <b>FDR 다중검정 보정</b>")}'
+        f'{_content_cell("• 6개 변수 OR 순위 산출<br>• Trial별 학습 효과 추적<br>• Personality × 시간압박 교차")}'
+        '</tr>'
+        # 행 3: 왜 이 방법인가
+        '<tr>'
+        f'{_label_cell("📌", "왜 이 방법인가")}'
+        f'{_content_cell("정적 시뮬레이션은 Fast 98% 쏠림.<br><b>동적 피드백</b>으로 71% 안정화")}'
+        f'{_content_cell("단순 t-test는 같은 사람의<br>반복 관측 무시.<br><b>GEE가 상관구조 통제</b>")}'
+        f'{_content_cell('수치 나열이 아닌<br><b>"UI보다 상황·성향이 핵심"</b><br>으로 해석')}'
+        '</tr>'
+        # 행 4: 현업 활용
+        '<tr>'
+        f'{_label_cell("💼", "현업 활용")}'
+        f'{_content_cell("→ 동적 피드백 UI로<br><b>혼잡 노선 이용객 자율 분산</b>", color=C_DESIGN, bold=True)}'
+        f'{_content_cell("→ 시간압박·성향 조합으로<br><b>선택 확률 85~94% 예측</b>", color=C_METHOD, bold=True)}'
+        f'{_content_cell("→ 규제·요금 없이 UI만으로<br><b>3일차부터 행동 안정화</b>", color=C_FIND, bold=True)}'
+        '</tr>'
+        '</table>'
+    )
+    st.markdown(table_html, unsafe_allow_html=True)
+
+    st.markdown("")
+
+    # ---------- 영향 요인 OR 순위 ----------
+    st.markdown('<h3 style="margin-top:18px;">🏆 영향 요인 OR 순위 (GEE 회귀 결과)</h3>', unsafe_allow_html=True)
+    st.caption("같은 사람의 5회 반복 선택을 GEE(AR1) 모델로 분석한 결과입니다.")
+
+    or_df = pd.DataFrame({
+        "순위": ["1", "2", "3", "4", "5", "6"],
+        "요인": ["시간 압박", "효율지향 성향", "UI (A그룹)", "시간 차이", "Trial 증가", "혼잡도 차이"],
+        "OR": ["2.55", "1.81", "1.39", "1.14", "0.67", "0.99"],
+        "해석": [
+            "빠른 경로 선택 확률 155% 증가",
+            "개인 성향에 따라 81% 증가",
+            "시각적 효과로 39% 증가",
+            "14% 차이만",
+            "반복 경험으로 33% 감소 (학습 효과)",
+            "미약하나 유의 (p<0.001)",
+        ],
+    })
+    st.dataframe(or_df, use_container_width=True, hide_index=True)
+
+    st.success(
+        "💡 **핵심 발견**: 사용자 선택 행동은 **UI보다 상황(시간 압박)·성향(효율지향) 변수의 영향을 더 크게 받는다.**"
+    )
+
+    st.markdown("---")
+
+    # ---------- 상세 탭 ----------
+    itab1, itab2, itab3 = st.tabs([
+        "🧭 방법론 선택의 근거",
+        "🛠️ 문제 해결 경험",
+        "💼 비즈니스 활용 시나리오",
+    ])
+
+    with itab1:
+        st.caption("\"통계를 돌린 것\"과 \"통계를 고른 것\"은 다릅니다. 이 프로젝트에서 각 방법을 선택한 이유입니다.")
+        method_df = pd.DataFrame({
+            "분석 단계": ["데이터 확보", "현실성 확보", "기본 검정", "반복측정", "다중 검정"],
+            "흔한 접근": [
+                "실제 사용자 모집·실험",
+                "정적 무작위 생성",
+                "t-test",
+                "시점별 t-test 반복",
+                "그냥 p<0.05",
+            ],
+            "이 프로젝트 선택": [
+                "현실 분포 기반 시뮬레이션",
+                "동적 혼잡도 피드백 루프",
+                "Z-Test + Cohen's h",
+                "GEE (AR1)",
+                "FDR (Benjamini-Hochberg)",
+            ],
+            "선택 이유": [
+                "100만 명 현장 실험은 윤리·비용 불가능",
+                "정적 생성은 Fast 98% 쏠림 → 의미 없음",
+                "이진 선택 + 효과 크기까지 측정",
+                "같은 사람 5회 관측 = 상관 존재. 무시 시 p값 왜곡",
+                "Type I error 폭증 방지, Bonferroni보다 검정력 유지",
+            ],
+        })
+        st.dataframe(method_df, use_container_width=True, hide_index=True)
+
+    with itab2:
+        st.caption("실험 설계 과정에서 마주친 두 가지 핵심 문제와 해결 과정입니다.")
+
+        st.markdown("#### 1️⃣ 정적 환경의 한계를 극복한 동적 A/B 시뮬레이션")
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.error("**🚨 문제**\n\n"
+                     "초기 시뮬레이션에서 Fast 선택률 **98% 쏠림** → "
+                     "A/B Test 자체가 무의미. 계수 조정·혼잡도 차이 모두 실패")
+        with c2:
+            st.info("**🔧 해결**\n\n"
+                    "\"사용자 선택 → 혼잡도 변화 → 다음 선택에 영향\" "
+                    "**동적 피드백 루프** 설계 → "
+                    "현실적 분포 **71.18% 안정화**")
+        with c3:
+            st.success("**🎓 배운 점**\n\n"
+                       "정적 테스트는 현실을 반영하지 못한다. "
+                       "**현실을 제대로 반영하려면 동적 관계를 가진 테스트 구성이 필수.**")
+
+        st.markdown("")
+        st.markdown("#### 2️⃣ 동일 사용자의 반복 선택 → 독립성 가정 위배")
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.error("**🚨 문제**\n\n"
+                     "사용자의 5회 선택은 독립이 아닌데, "
+                     "시간 상관관계를 무시하고 분석하면 **p값이 왜곡**됨")
+        with c2:
+            st.info("**🔧 해결**\n\n"
+                    "**GEE 모델 + AR(1)** 적용으로 "
+                    "반복 측정 효과 통제 + "
+                    "**시간순 선택 간 상관관계 반영**")
+        with c3:
+            st.success("**🎓 배운 점**\n\n"
+                       "결론보다 **데이터 구조에 맞는 모델 선택**이 "
+                       "분석의 핵심. 통계를 '돌리는' 게 아니라 '고르는' 능력.")
+
+    with itab3:
+        st.caption("이 실험 결과를 실제 교통·플랫폼 운영에 적용할 수 있는 3가지 시나리오입니다.")
+
+        biz_card = (
+            "padding:18px;border-radius:12px;height:100%;"
+            "background:rgba(255,255,255,0.03);"
+            "border:1px solid rgba(158,197,255,0.2);"
+        )
+
+        # 1. 러시아워 혼잡도 분산
+        st.markdown(f"#### 🚇 1. 러시아워 혼잡도 분산 전략")
+        st.markdown(
+            f'<div style="{biz_card}">'
+            f'<div style="color:#c9d1e8;font-size:14px;line-height:1.7;">'
+            f'러시아워에 <b style="color:#fff;">여유 경로 UI를 노출</b>해 혼잡 노선 이용객을 분산. '
+            f'2호선 강남~잠실 등에 <b style="color:{C_DESIGN};">"쾌적·앉아서 이용"</b> 문구만 적용해도 효과 가능.'
+            f'</div></div>',
+            unsafe_allow_html=True,
+        )
+
+        st.markdown("")
+
+        # 2. 개인화 경로 추천
+        st.markdown(f"#### 🎯 2. 개인화 경로 추천")
+        st.markdown(
+            f'<div style="{biz_card}">'
+            f'<div style="color:#c9d1e8;font-size:14px;line-height:1.7;">'
+            f'시간 압박+성향 조합으로 선택 확률 <b style="color:{C_METHOD};">85~94% 예측 가능</b>. '
+            f'출퇴근·효율형엔 시간 강조, 여유·편안형엔 쾌적성 강조 → <b style="color:#fff;">동일 노선에서도 사용자별 최적 경로 제안</b>.'
+            f'</div></div>',
+            unsafe_allow_html=True,
+        )
+
+        st.markdown("")
+
+        # 3. 동적 피드백의 학습 효과
+        st.markdown(f"#### 🔁 3. 동적 피드백의 학습 효과")
+        st.markdown(
+            f'<div style="{biz_card}">'
+            f'<div style="color:#c9d1e8;font-size:14px;line-height:1.7;">'
+            f'혼잡도 지수만 UI로 노출해도 사용자가 스스로 여유 경로를 선택. '
+            f'<b style="color:{C_FIND};">규제·요금 없이 UI만으로 행동 변화 유도</b>, '
+            f'추가 비용 없이 <b style="color:#fff;">3일차부터 분산 행동 안정화</b>.'
+            f'</div></div>',
+            unsafe_allow_html=True,
+        )
+
+        st.markdown("---")
+        st.markdown("#### 🎯 공통 지향점")
+        st.markdown('> **"A/B Test는 \'어느 UI가 좋은가\'가 아니라, \'어떤 조건에서 사람이 무엇을 선택하는가\'를 밝히는 도구다."**')
+        g1, g2, g3 = st.columns(3)
+        with g1:
+            st.success("🔓 **탈직관**\n\n'감'이 아닌\nGEE·FDR 기반 엄밀 검증")
+        with g2:
+            st.success("🔁 **재현성**\n\n가상 데이터 → 분석 → 리포트까지\n자동화")
+        with g3:
+            st.success("🧠 **예측화**\n\n과거 행동 → 미래 선택 패턴\n예측 (85~94%)")
+
+
 def page_overview():
     """Overview 페이지"""
     st.markdown('<h1 class="main-header">🚇 지하철 경로 선택 A/B Test</h1>', unsafe_allow_html=True)
@@ -603,7 +872,8 @@ def sidebar():
     st.sidebar.title("🚇 Navigation")
 
     page = st.sidebar.radio("페이지 선택",
-                           ["📊 프로젝트 개요",
+                           ["📌 SUMMARY",
+                            "📊 프로젝트 개요",
                             "📈 시각화 분석",
                             "📋 통계 분석",
                             "🔍 데이터 탐색",
@@ -629,7 +899,9 @@ def sidebar():
 def main():
     page = sidebar()
 
-    if page == "📊 프로젝트 개요":
+    if page == "📌 SUMMARY":
+        page_insight()
+    elif page == "📊 프로젝트 개요":
         page_overview()
     elif page == "📈 시각화 분석":
         page_visualizations()
